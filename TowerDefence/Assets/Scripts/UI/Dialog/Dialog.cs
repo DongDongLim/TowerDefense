@@ -24,22 +24,12 @@ public class Dialog : MonoBehaviour
 
     #region  Mathods
 
-    private void Awake()
+    protected virtual void Awake()
     {
         foreach (var closeButton in _closeButtons)
         {
             closeButton.OnClickAsObservable().Subscribe(_ => DeActive());
         }
-    }
-
-    private void OnEnable()
-    {
-
-    }
-
-    private void OnDisable()
-    {
-
     }
 
     public virtual void Active()
