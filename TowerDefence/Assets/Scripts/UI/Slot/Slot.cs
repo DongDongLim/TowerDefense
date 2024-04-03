@@ -3,19 +3,32 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
 using TMPro;
+using System.Collections.Generic;
 
 public class Slot : MonoBehaviour
 {
     [SerializeField] protected Button _clickButton;
-    protected Action _clickAction;
+    [SerializeField] private EUIEventType _uiEventKey;
+    [SerializeField] private string _uiEventValue;
+
+    protected KeyValuePair<EUIEventType, string> _slotEvent;
 
     private void Awake()
     {
-        _clickButton.OnClickAsObservable().Subscribe(_ => _clickAction?.Invoke());
+        _slotEvent = new KeyValuePair<EUIEventType, string>(_uiEventKey, _uiEventValue);
+        _clickButton.OnClickAsObservable().Subscribe(_ => 
+        {
+            UIEventManager.Instance.SendEvent(_slotEvent);
+        });
     }
 
-    public void RegisterClickAction(Action action)
+    private void OnEnable()
     {
-        _clickAction = action;
+        ResetLocalPosition();
+    }
+
+    protected virtual void ResetLocalPosition()
+    {
+        transform.localPosition = Vector2.zero;
     }
 }
