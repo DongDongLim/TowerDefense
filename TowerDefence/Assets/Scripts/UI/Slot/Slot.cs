@@ -1,24 +1,23 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using TMPro;
-using System.Collections.Generic;
 
-public class Slot : MonoBehaviour
+public class Slot : GameMonoObject
 {
     [SerializeField] protected Button _clickButton;
-    [SerializeField] private EUIEventType _uiEventKey;
-    [SerializeField] private string _uiEventValue;
+    [SerializeField] private UIEventArgument uIEventArgument;
 
-    protected KeyValuePair<EUIEventType, string> _slotEvent;
+
+    public override void Init(EventArgument argument)
+    {
+        
+    }
 
     private void Awake()
     {
-        _slotEvent = new KeyValuePair<EUIEventType, string>(_uiEventKey, _uiEventValue);
         _clickButton.OnClickAsObservable().Subscribe(_ => 
         {
-            UIEventManager.Instance.SendEvent(_slotEvent);
+            GameManager.Instance.UIEventSubject.SendEvent(uIEventArgument);
         });
     }
 
