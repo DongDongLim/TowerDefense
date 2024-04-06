@@ -8,9 +8,9 @@ using System;
 public static class AddressableUtil
 {
     // 라벨로 생성한 오브젝트 메모리 리스트
-    private static Dictionary<string, List<GameObject>> _resourceGameObjects = new();
+    private static Dictionary<string, List<GameObject>> _resourceMemoryObjects = new();
     // 키로 생성한 오브젝트 메모리 리스트
-    private static Dictionary<string, GameObject> _resourceGameObject = new();
+    private static Dictionary<string, GameObject> _resourceMemoryObject = new();
 
     public static async UniTask<List<GameObject>> LoadResources(string label)
     {
@@ -19,88 +19,88 @@ public static class AddressableUtil
         {
             var handle = Addressables.LoadAssetAsync<GameObject>(resource.PrimaryKey);
 
-            if (_resourceGameObjects.TryGetValue(label, out var gameObjects) == false)
+            if (_resourceMemoryObjects.TryGetValue(label, out var gameObjects) == false)
             {
                 gameObjects = new List<GameObject>();
-                _resourceGameObjects.Add(label, gameObjects);
+                _resourceMemoryObjects.Add(label, gameObjects);
             }
 
             gameObjects.Add(await handle);
         }
 
-        return _resourceGameObjects[label];
+        return _resourceMemoryObjects[label];
     }
 
     public static async UniTask<GameObject> LoadResource(string addressKey)
     {
-        if (_resourceGameObject.TryGetValue(addressKey, out var gameObject) == true)
-            return gameObject;
+        if (_resourceMemoryObject.TryGetValue(addressKey, out var memoryObject) == true)
+            return memoryObject;
 
         var handle = Addressables.LoadAssetAsync<GameObject>(addressKey);
 
-        gameObject = await handle;
+        memoryObject = await handle;
 
-        _resourceGameObject.Add(addressKey, gameObject);
+        _resourceMemoryObject.Add(addressKey, memoryObject);
 
-        return gameObject;
+        return memoryObject;
     }
 
     public static void ReleaseResources(string label)
     {
-        if (_resourceGameObjects.TryGetValue(label, out var gameObjects) == false)
+        if (_resourceMemoryObjects.TryGetValue(label, out var memoryObjects) == false)
             return;
 
-        if (gameObjects == null)
+        if (memoryObjects == null)
             return;
 
-        foreach (var handle in gameObjects)
+        foreach (var memoryObject in memoryObjects)
         {
-            Addressables.Release(handle);
+            Addressables.Release(memoryObject);
         }
 
-        _resourceGameObjects.Remove(label);
+        _resourceMemoryObjects.Remove(label);
     }
 
     public static void ReleaseResource(string addressKey)
     {
-        if (_resourceGameObject.TryGetValue(addressKey, out var gameObject) == false)
+        if (_resourceMemoryObject.TryGetValue(addressKey, out var memoryObject) == false)
             return;
 
-        Addressables.Release(gameObject);
+        Addressables.Release(memoryObject);
 
-        _resourceGameObject.Remove(addressKey);
+        _resourceMemoryObject.Remove(addressKey);
     }
 
     public static void ReleaseAllResource()
     {
-        foreach(var handles in _resourceGameObjects.Values)
+        foreach(var memoryObjects in _resourceMemoryObjects.Values)
         {
-            foreach(var handle in handles)
+            foreach(var memoryObject in memoryObjects)
             {
-                Addressables.Release(handle);
+                Addressables.Release(memoryObject);
             }
         }
-        foreach(var handle in _resourceGameObject.Values)
+        foreach(var memoryObject in _resourceMemoryObject.Values)
         {
-            Addressables.Release(handle);
+            Addressables.Release(memoryObject);
         }
 
-        _resourceGameObjects.Clear();
-        _resourceGameObject.Clear();
+        _resourceMemoryObjects.Clear();
+        _resourceMemoryObject.Clear();
     }
 
     public static async UniTask InstantiateResources<T>(string label, Transform parent, Action<List<T>> complete) where T : Component
     {
-        if (_resourceGameObjects.TryGetValue(label, out var gameObjects) == false)
+        if (_resourceMemoryObjects.TryGetValue(label, out var memoryObjects) == false)
         {
-            gameObjects = await LoadResources(label);
+            memoryObjects = await LoadResources(label);
         }
 
         List<T> resultList = new();
 
-        foreach (var handle in gameObjects)
+        foreach (var memoryObject in memoryObjects)
         {
-            var obj = GameObject.Instantiate(handle, parent, false);
+            var obj = GameObject.Instantiate(memoryObject, parent, false);
             T data = obj.GetComponent<T>();
 
             if (data == null)
@@ -127,13 +127,13 @@ public static class AddressableUtil
     
     public static async UniTask InstantiateResource(string addressKey, Transform parent, Action<GameObject> complete)
     {
-        if (_resourceGameObject.TryGetValue(addressKey, out var handle) == false)
+        if (_resourceMemoryObject.TryGetValue(addressKey, out var memoryObject) == false)
         {
-            handle = await LoadResource(addressKey);
+            memoryObject = await LoadResource(addressKey);
         }
 
-        var obj = GameObject.Instantiate(handle, parent, false);
+        var gameObject = GameObject.Instantiate(memoryObject, parent, false);
 
-        complete?.Invoke(obj);
+        complete?.Invoke(gameObject);
     }
 }
