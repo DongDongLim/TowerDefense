@@ -11,7 +11,7 @@ public enum EDialogActiveState
     DeActive,
 }
 
-public class Dialog : MonoBehaviour
+public class Dialog : GameMonoObject
 {
     #region Varialbles
 
@@ -23,6 +23,9 @@ public class Dialog : MonoBehaviour
     #endregion
 
     #region  Mathods
+
+
+    public override void Init(EventArgument argument){}
 
     protected virtual void Awake()
     {
