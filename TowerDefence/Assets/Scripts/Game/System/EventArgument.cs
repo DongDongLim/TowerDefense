@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class EventArgument
+public abstract class EventArgument
 {
-
+    public abstract Type GetArgumentType();
 }
