@@ -1,30 +1,27 @@
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-public enum EUIEventType
-{
-    Enable = 0,
-
-    Count,
-}
 
 [Serializable]
 public class UIEventArgument : EventArgument
 {
-    public EUIEventType eUIEventType;
-    public UIEventArgument(EUIEventType uIEventType)
+    public override Type GetArgumentType()
     {
-        eUIEventType = uIEventType;
+        return typeof(UIEventArgument);
     }
 }
 
 [Serializable]
-public class UIEventArgument_Enable : UIEventArgument
+public sealed class UIEventArgument_Enable : UIEventArgument
 {
-    public bool isActive;
+    public List<string> addressKeys;
+    public Transform parentTransform;
+}
+
+[Serializable]
+public sealed class UIEventArgument_Disable : UIEventArgument
+{
     public string addressKey;
-
-    public UIEventArgument_Enable() : base(EUIEventType.Enable)
-    {
-
-    }
+    public GameMonoObject deActivateObject;
 }

@@ -11,7 +11,7 @@ public enum EDialogActiveState
     DeActive,
 }
 
-public class Dialog : GameMonoObject
+public class Dialog : UIMonoObject
 {
     #region Varialbles
 
@@ -24,9 +24,6 @@ public class Dialog : GameMonoObject
 
     #region  Mathods
 
-
-    public override void Init(EventArgument argument){}
-
     protected virtual void Awake()
     {
         foreach (var closeButton in _closeButtons)
@@ -35,12 +32,12 @@ public class Dialog : GameMonoObject
         }
     }
 
-    public virtual void Active()
+    public sealed override void Active()
     {
         if (_activeState == EDialogActiveState.Activating)
             return;
         EveActive();
-        gameObject.SetActive(true);
+        base.Active();
         _activeState = EDialogActiveState.Active;
     }
 
@@ -49,12 +46,12 @@ public class Dialog : GameMonoObject
         _activeState = EDialogActiveState.Activating;
     }
 
-    public virtual void DeActive()
+    public sealed override void DeActive()
     {
         if (_activeState == EDialogActiveState.DeActivating)
             return;
         EveDeActive();
-        gameObject.SetActive(false);
+        base.DeActive();
         _activeState = EDialogActiveState.DeActive;
     }
 

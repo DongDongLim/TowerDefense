@@ -1,22 +1,42 @@
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Serialization;
 
-public class SlotListDialog : Dialog
+public sealed class SlotListDialog : Dialog
 {
-    [SerializeField] protected AssetLabelReference slotAddressableLabel;
-    [SerializeField] protected Transform _slotParent;
+    [SerializeField] private AssetLabelReference _slotAddressableLabel;
+    [SerializeField] private Transform _slotParent;
 
-    protected override void Awake()
+    private UIEventArgument_Enable _slotCreateArgument;
+
+    private void Start()
     {
-        base.Awake();
-        InstantiateSlot();
+        if (_slotAddressableLabel.RuntimeKeyIsValid() == false)
+            return;
+
+        Addressables.LoadResourceLocationsAsync(_slotAddressableLabel.RuntimeKey).Completed += result =>
+        {
+            var resourceList = result.Result;
+            
+            _slotCreateArgument = new UIEventArgument_Enable()
+            {
+                addressKeys = resourceList.Select(item => item.PrimaryKey).ToList(),
+                parentTransform = _slotParent,
+            };
+
+            InstantiateSlot();
+        };
     }
-
-    public void InstantiateSlot()
+    
+    private void InstantiateSlot()
     {
-        AddressableUtil.InstantiateResources<Slot>(slotAddressableLabel.labelString, _slotParent, null).Forget();
+        if(_eventObservers.TryGetValue(EControllerType.UI, out var gameObserver) == false)
+            return;
+
+        gameObserver.SendEvent(_slotCreateArgument);
     }
 
 }

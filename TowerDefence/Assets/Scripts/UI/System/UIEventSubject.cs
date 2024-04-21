@@ -1,24 +1,16 @@
 using System;
-using System.Collections.Generic;
 using UniRx;
+using UnityEngine;
 
-public class UIEventSubject : IDisposable
+public class UIEventSubject : IDisposable, IGameObserver
 {
     #region  Variables
-    private Dictionary<EUIEventType, Subject<UIEventArgument>> _eventSubjects = new();
+    private Subject<UIEventArgument> _eventSubject = new();
 
     private bool _isDisposed = false;
     #endregion
 
     #region  Methods
-
-    public UIEventSubject()
-    {
-        for (EUIEventType eventType = EUIEventType.Enable; eventType < EUIEventType.Count; eventType++)
-        {
-            _eventSubjects.Add(eventType, new());
-        }
-    }
 
     ~UIEventSubject()
     {
@@ -39,28 +31,26 @@ public class UIEventSubject : IDisposable
 
         if (isDispose == true)
         {
-            foreach (var subject in _eventSubjects.Values)
-            {
-                subject.OnCompleted();
-            }
+            _eventSubject.OnCompleted();
         }
     }
 
-
-    public void SendEvent(UIEventArgument eventParameter)
+    public void SendEvent(EventArgument eventParameter)
     {
-        if (_eventSubjects.TryGetValue(eventParameter.eUIEventType, out var subject) == false)
-            throw new KeyNotFoundException($"Not Found {eventParameter.eUIEventType}");
+        var parameter = eventParameter as UIEventArgument;
 
-        subject.OnNext(eventParameter);
+        if (parameter == null)
+        {
+            Debug.LogError($"Invalid Cast Argument. type : {eventParameter.GetArgumentType()}");
+            return;
+        }
+
+        _eventSubject.OnNext(parameter);
     }
 
-    public IObservable<object> GetUIEventSubject(EUIEventType eventType)
+    public IObservable<EventArgument> GetEventSubject()
     {
-        if (_eventSubjects.TryGetValue(eventType, out var subject) == false)
-            throw new KeyNotFoundException($"Not Found {eventType}");
-
-        return subject.AsObservable();
+        return _eventSubject.AsObservable();
     }
 
     #endregion
