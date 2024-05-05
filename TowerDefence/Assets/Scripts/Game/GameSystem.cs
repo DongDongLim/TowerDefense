@@ -1,17 +1,20 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
+using System.Linq;
 
 public sealed class GameSystem : MonoBehaviour
 {
     [SerializeField] private AssetLabelReference _controllerLabel;
     private readonly Dictionary<EControllerType, IGameObserver> _eventObserver = new();
-
+    private AddressablePool _controllerPool;
+    
     private void Awake()
     {
+        _controllerPool = new AddressablePool();
         if (_controllerLabel.RuntimeKeyIsValid() == false)
         {
-            Debug.LogError("Not Setting ControllerLobel");
+            Debug.LogError("Not Setting ControllerLabel");
             return;
         }
 
@@ -22,22 +25,22 @@ public sealed class GameSystem : MonoBehaviour
             if (resourceList == null || resourceList.Count == 0)
                 return;
 
-            foreach (var resource in resourceList)
-            {
-                if (string.IsNullOrEmpty(resource.PrimaryKey) == true)
-                    continue;
+            var addressKeys = resourceList.Select(item => item.PrimaryKey).ToList();
 
-                AddressableUtil.InstantiateResource<Controller>(resource.PrimaryKey, null, controller =>
+            _controllerPool.GetGameMonoObjects<Controller>(addressKeys, null, controllers =>
+            {
+                foreach (var controller in controllers)
                 {
                     _eventObserver.TryAdd(controller.ControllerType, controller.GetObserver());
-                    controller.Init(_eventObserver);
-                });
-            }
+                    controller.SetEventObservers(_eventObserver, null);
+                    controller.Active();
+                }
+            });
         };
     }
 
     private void OnDestroy()
     {
-        AddressableUtil.ReleaseAllResource();
+        AddressablePool.ReleaseAllResource();
     }
 }

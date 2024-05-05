@@ -10,21 +10,15 @@ public enum EControllerType
     Sound,
 }
 
-public abstract class Controller : MonoBehaviour
+public abstract class Controller : GameMonoObject
 {
     #region  Variables
     protected EControllerType _controllerType;
     public EControllerType ControllerType => _controllerType;
-    protected IReadOnlyDictionary<EControllerType, IGameObserver> _eventObservers;
     #endregion
 
     #region 
 
     public abstract IGameObserver GetObserver();
-
-    public virtual void Init(IReadOnlyDictionary<EControllerType, IGameObserver> eventObservers)
-    {
-        _eventObservers = eventObservers;
-    }
     #endregion
 }

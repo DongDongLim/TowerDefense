@@ -2,20 +2,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using System;
+using Unity.VisualScripting;
 
 public sealed class UIController : Controller
 {
     #region Variables
 
     [SerializeField] private RectTransform _uiParent;
-    private readonly Dictionary<string, List<GameMonoObject>> _activeUIObjects = new();
-    private readonly Dictionary<string, Stack<GameMonoObject>> _deActiveUIObjects = new();
-    
+    private AddressablePool _uiObjectPool;
     private const string StartUIAddressKey = "MainMenu";
+    private readonly List<IDisposable> _disposables = new();
 
     #endregion
 
     #region Methods
+
+    private void OnDestroy()
+    {
+        foreach (var disposable in _disposables)
+        {
+            disposable?.Dispose();
+        }
+    }
 
     public override IGameObserver GetObserver()
     {
@@ -26,18 +34,22 @@ public sealed class UIController : Controller
 
     private void Subscribe(UIEventSubject subject)
     {
-        subject.GetEventSubject().Where(eventArgs => eventArgs is UIEventArgument_Enable)
-            .Select(eventArgs => eventArgs as UIEventArgument_Enable).Subscribe(ActivateObject)
-            .AddTo(gameObject);
-        subject.GetEventSubject().Where(eventArgs => eventArgs is UIEventArgument_Disable)
-            .Select(eventArgs => eventArgs as UIEventArgument_Disable).Subscribe(DeActivateObject)
-            .AddTo(gameObject);
+        _disposables.Add(
+            subject.GetEventSubject().Where(eventArgs => eventArgs is UIEventArgument_Enable)
+                .Select(eventArgs => eventArgs as UIEventArgument_Enable).Subscribe(ActivateObject)
+                .AddTo(gameObject));
     }
 
-    public override void Init(IReadOnlyDictionary<EControllerType, IGameObserver> eventObservers)
+    public override void Init(string addressKey)
     {
-        base.Init(eventObservers);
+        base.Init(addressKey);
+        _uiObjectPool = new AddressablePool();
+    }
 
+    public override void Active()
+    {
+        base.Active();
+        
         var startEvent = new UIEventArgument_Enable()
         {
             addressKeys = new List<string>() { StartUIAddressKey },
@@ -48,63 +60,26 @@ public sealed class UIController : Controller
 
     private void ActivateObject(UIEventArgument_Enable eventArgument)
     {
+        if (eventArgument.addressKeys == null || eventArgument.addressKeys.Count == 0)
+            return;
+
         var parentTransform = eventArgument.parentTransform == null ? _uiParent : eventArgument.parentTransform;
 
         var addressKeys = eventArgument.addressKeys;
 
-        foreach (var addressKey in addressKeys)
+        _uiObjectPool.GetGameMonoObjects(eventArgument.addressKeys, parentTransform, resultList =>
         {
-            if (string.IsNullOrEmpty(addressKey) == true)
-                continue;
-
-            if (_activeUIObjects.TryGetValue(addressKey, out var activeObjects) == false)
+            if (resultList == null || resultList.Count == 0)
             {
-                activeObjects = new List<GameMonoObject>();
-                _activeUIObjects.Add(addressKey, activeObjects);
+                return;
             }
 
-            if (_deActiveUIObjects.TryGetValue(addressKey, out var deActiveObjects) == false ||
-                deActiveObjects.TryPop(out var activeObject) == false)
+            foreach (var activeObject in resultList)
             {
-                AddressableUtil.InstantiateResource<GameMonoObject>(addressKey, parentTransform, gameMonoObject =>
-                {
-                    gameMonoObject.Init(_eventObservers, eventArgument, addressKey);
-                    gameMonoObject.Active();
-
-                    activeObjects.Add(gameMonoObject);
-                });
-                continue;
+                activeObject.SetEventObservers(_eventObservers, eventArgument);
+                activeObject.Active();
             }
-
-            activeObject.Init(_eventObservers, eventArgument, addressKey);
-            activeObject.Active();
-
-            activeObjects.Add(activeObject);   
-        }
-    }
-
-    private void DeActivateObject(UIEventArgument_Disable eventArgument)
-    {
-        var addressKey = eventArgument.addressKey;
-        var deActiveObject = eventArgument.deActivateObject;
-
-        if (_deActiveUIObjects.TryGetValue(addressKey, out var deActiveObjects) == false)
-        {
-            deActiveObjects = new Stack<GameMonoObject>();
-            _deActiveUIObjects.Add(addressKey, deActiveObjects);
-        }
-
-        if (_activeUIObjects.TryGetValue(addressKey, out var activeObjects) == false ||
-            activeObjects.Contains(deActiveObject) == false)
-            throw new InvalidProgramException($"Not Active Object. {deActiveObject.gameObject.name}");
-
-        deActiveObjects.Push(deActiveObject);
-        activeObjects.Remove(deActiveObject);
-
-        if (activeObjects.Count == 0)
-        {
-            _activeUIObjects.Remove(addressKey);
-        }
+        });
     }
 
     #endregion
