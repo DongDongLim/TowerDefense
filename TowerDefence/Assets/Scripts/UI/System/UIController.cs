@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
-using System;
-using Unity.VisualScripting;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.AddressableAssets;
 
 public sealed class UIController : Controller
 {
@@ -10,8 +10,8 @@ public sealed class UIController : Controller
 
     [SerializeField] private RectTransform _uiParent;
     private AddressablePool _uiObjectPool;
-    private const string StartUIAddressKey = "MainMenu";
-    private readonly List<IDisposable> _disposables = new();
+    private UIEventSubject _uiEventObserver;
+    private EventArgument _startEventArgument;
 
     #endregion
 
@@ -19,55 +19,61 @@ public sealed class UIController : Controller
 
     private void OnDestroy()
     {
-        foreach (var disposable in _disposables)
-        {
-            disposable?.Dispose();
-        }
+        _uiEventObserver?.Dispose();
     }
 
     public override IGameObserver GetObserver()
     {
-        var subject = new UIEventSubject();
-        Subscribe(subject);
-        return subject;
+        return _uiEventObserver ??= new UIEventSubject();
     }
 
-    private void Subscribe(UIEventSubject subject)
+    private void Subscribe()
     {
-        _disposables.Add(
-            subject.GetEventSubject().Where(eventArgs => eventArgs is UIEventArgument_Enable)
-                .Select(eventArgs => eventArgs as UIEventArgument_Enable).Subscribe(ActivateObject)
-                .AddTo(gameObject));
+        _uiEventObserver.GetEventSubject().Where(eventArgs => eventArgs is UIEventArgument_Enable)
+            .Select(eventArgs => eventArgs as UIEventArgument_Enable).Subscribe(ActivateObject)
+            .AddTo(gameObject);
     }
 
     public override void Init(string addressKey)
     {
         base.Init(addressKey);
         _uiObjectPool = new AddressablePool();
+        _uiEventObserver ??= new UIEventSubject();
+        _startEventArgument = GetComponent<EventArgument>();
+        Subscribe();
     }
 
     public override void Active()
     {
         base.Active();
-        
-        var startEvent = new UIEventArgument_Enable()
-        {
-            addressKeys = new List<string>() { StartUIAddressKey },
-        };
-
-        ActivateObject(startEvent);
+        ActivateObject(_startEventArgument as UIEventArgument_Enable);
     }
 
     private void ActivateObject(UIEventArgument_Enable eventArgument)
     {
-        if (eventArgument.addressKeys == null || eventArgument.addressKeys.Count == 0)
+        if (eventArgument == null)
             return;
 
-        var parentTransform = eventArgument.parentTransform == null ? _uiParent : eventArgument.parentTransform;
+        
+        if (eventArgument.AddressableLabel.RuntimeKeyIsValid() == true)
+        {
+            Addressables.LoadResourceLocationsAsync(eventArgument.AddressableLabel.RuntimeKey).Completed += result =>
+            {
+                eventArgument.AddressKeys ??= new List<string>();
+                eventArgument.AddressKeys.AddRange(result.Result.Select(resource => resource.PrimaryKey));
+                eventArgument.AddressableLabel.labelString = string.Empty;
+                ActivateObject(eventArgument);
+            };
+            return;
+        }
+        
+        if (eventArgument.AddressKeys == null || eventArgument.AddressKeys.Count == 0)
+            return;
+        
+        var addressKeys = eventArgument.AddressKeys;
+        var parentTransform = eventArgument.ParentTransform == null ? _uiParent : eventArgument.ParentTransform;
 
-        var addressKeys = eventArgument.addressKeys;
-
-        _uiObjectPool.GetGameMonoObjects(eventArgument.addressKeys, parentTransform, resultList =>
+        _uiObjectPool.GetGameMonoObjects(eventArgument.AddressKeys, parentTransform, resultList =>
         {
             if (resultList == null || resultList.Count == 0)
             {

@@ -12,8 +12,9 @@ public class Dialog : UIMonoObject
 
     #region  Mathods
 
-    protected virtual void Awake()
+    public override void Init(string addressKey)
     {
+        base.Init(addressKey);
         foreach (var closeButton in _closeButtons)
         {
             closeButton.OnClickAsObservable().Subscribe(_ => DeActive());

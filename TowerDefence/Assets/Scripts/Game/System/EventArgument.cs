@@ -1,7 +1,6 @@
-using System;
+using UnityEngine;
 
-[Serializable]
-public abstract class EventArgument
+public abstract class EventArgument : MonoBehaviour
 {
-    public abstract Type GetArgumentType();
+    
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class UIEventSubject : IDisposable, IGameObserver
 {
     #region  Variables
-    private Subject<UIEventArgument> _eventSubject = new();
+    private readonly Subject<EventArgument> _eventSubject = new();
 
     private bool _isDisposed = false;
     #endregion
@@ -37,15 +37,7 @@ public class UIEventSubject : IDisposable, IGameObserver
 
     public void SendEvent(EventArgument eventParameter)
     {
-        var parameter = eventParameter as UIEventArgument;
-
-        if (parameter == null)
-        {
-            Debug.LogError($"Invalid Cast Argument. type : {eventParameter.GetArgumentType()}");
-            return;
-        }
-
-        _eventSubject.OnNext(parameter);
+        _eventSubject.OnNext(eventParameter);
     }
 
     public IObservable<EventArgument> GetEventSubject()

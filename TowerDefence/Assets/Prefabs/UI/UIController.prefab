@@ -180,6 +180,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8725329116963258626}
   - component: {fileID: 2335552674681726071}
+  - component: {fileID: 958918456371999402}
   m_Layer: 0
   m_Name: UIController
   m_TagString: Untagged
@@ -218,6 +219,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _uiParent: {fileID: 6654186641669064976}
+--- !u!114 &958918456371999402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7235364280848807849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbed422ecbbd04227aaafa5525a6a9d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AddressableLabel:
+    m_LabelString: 
+  AddressKeys:
+  - MainMenu
+  ParentTransform: {fileID: 0}
 --- !u!1 &7447138265578400706
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,25 +1,24 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using TMPro;
 
 public class Slot : UIMonoObject
 {
     [SerializeField] protected Button _clickButton;
-    [SerializeField] private UIEventArgument _uIEventArgument;
+    [SerializeField] private EventArgument _clickEventArgument;
 
 
     protected virtual void Awake()
     {
-        _clickButton.OnClickAsObservable().Subscribe(_ => 
+        _clickButton.OnClickAsObservable().Subscribe(_ =>
         {
-            if(_eventObservers.TryGetValue(EControllerType.UI, out var gameObserver) == false)
-            { 
+            if (_eventObservers.TryGetValue(EControllerType.UI, out var gameObserver) == false)
+            {
                 Debug.LogError("Not Initialized");
                 return;
             }
 
-            gameObserver.SendEvent(_uIEventArgument);
+            gameObserver.SendEvent(_clickEventArgument);
         });
     }
 
