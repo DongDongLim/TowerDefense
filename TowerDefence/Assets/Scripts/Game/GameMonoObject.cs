@@ -24,7 +24,7 @@ public abstract class GameMonoObject : MonoBehaviour
     {
         _addressKey = addressKey;
     }
-    public virtual void SetEventObservers(IReadOnlyDictionary<EControllerType, IGameObserver> eventObservers, EventArgument argument)
+    public virtual void SetEventObservers(IReadOnlyDictionary<EControllerType, IGameObserver> eventObservers, IEventArgument argument)
     {
         _eventObservers = eventObservers;
     }

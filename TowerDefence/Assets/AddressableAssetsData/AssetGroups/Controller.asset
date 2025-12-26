@@ -13,14 +13,13 @@ MonoBehaviour:
   m_Name: Controller
   m_EditorClassIdentifier: 
   m_GroupName: Controller
-  m_Data:
-    m_SerializedData: []
   m_GUID: 630ff32e442d346c68ebd5c14ccb3319
   m_SerializeEntries:
   - m_GUID: 596f8b2b93b9b41419306445272ab3d6
     m_Address: UIController
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Controller
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9c6d708571dc146c7ba7c05d03ff2f9b, type: 2}

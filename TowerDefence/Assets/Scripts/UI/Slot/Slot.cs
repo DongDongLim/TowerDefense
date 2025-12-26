@@ -1,16 +1,19 @@
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 using UniRx;
 
 public class Slot : UIMonoObject
 {
-    [SerializeField] protected Button _clickButton;
-    [SerializeField] private EventArgument _clickEventArgument;
+    [SerializeField] protected UIButton _clickButton;
+    public IEventArgument ClickEventArgument;
+    private IDisposable _clickEvent;
 
-
-    protected virtual void Awake()
+    public override void Init(string addressKey)
     {
-        _clickButton.OnClickAsObservable().Subscribe(_ =>
+        base.Init(addressKey);
+     
+        _clickEvent?.Dispose();
+        _clickEvent = _clickButton.OnClickAsObservable().Subscribe(_ =>
         {
             if (_eventObservers.TryGetValue(EControllerType.UI, out var gameObserver) == false)
             {
@@ -18,8 +21,8 @@ public class Slot : UIMonoObject
                 return;
             }
 
-            gameObserver.SendEvent(_clickEventArgument);
-        });
+            gameObserver.SendEvent(ClickEventArgument);
+        }).AddTo(gameObject);   
     }
 
     private void OnEnable()

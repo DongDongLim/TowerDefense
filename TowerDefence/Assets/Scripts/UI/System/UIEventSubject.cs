@@ -5,7 +5,7 @@ using UnityEngine;
 public class UIEventSubject : IDisposable, IGameObserver
 {
     #region  Variables
-    private readonly Subject<EventArgument> _eventSubject = new();
+    private readonly Subject<IEventArgument> _eventSubject = new();
 
     private bool _isDisposed = false;
     #endregion
@@ -35,12 +35,12 @@ public class UIEventSubject : IDisposable, IGameObserver
         }
     }
 
-    public void SendEvent(EventArgument eventParameter)
+    public void SendEvent(IEventArgument eventParameter)
     {
         _eventSubject.OnNext(eventParameter);
     }
 
-    public IObservable<EventArgument> GetEventSubject()
+    public IObservable<IEventArgument> GetEventSubject()
     {
         return _eventSubject.AsObservable();
     }

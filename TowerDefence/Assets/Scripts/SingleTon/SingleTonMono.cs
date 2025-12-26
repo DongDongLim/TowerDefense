@@ -9,7 +9,7 @@ public abstract class SingleTonMono<T> : MonoBehaviour where T : Component
     {
         get
         {
-            var typeObjs = FindObjectsOfType<T>();
+            var typeObjs = FindObjectsByType<T>(FindObjectsSortMode.None);
 
             if (typeObjs.Length != 0)
             {

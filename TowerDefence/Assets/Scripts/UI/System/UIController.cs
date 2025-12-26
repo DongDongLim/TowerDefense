@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UniRx;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ public sealed class UIController : Controller
     [SerializeField] private RectTransform _uiParent;
     private AddressablePool _uiObjectPool;
     private UIEventSubject _uiEventObserver;
-    private EventArgument _startEventArgument;
+    private IEventArgument _startEventArgument;
 
     #endregion
 
@@ -39,7 +40,7 @@ public sealed class UIController : Controller
         base.Init(addressKey);
         _uiObjectPool = new AddressablePool();
         _uiEventObserver ??= new UIEventSubject();
-        _startEventArgument = GetComponent<EventArgument>();
+        _startEventArgument = GetComponent<IEventArgument>();
         Subscribe();
     }
 
@@ -53,9 +54,9 @@ public sealed class UIController : Controller
     {
         if (eventArgument == null)
             return;
-
         
-        if (eventArgument.AddressableLabel.RuntimeKeyIsValid() == true)
+        if (eventArgument.AddressableLabel.RuntimeKeyIsValid() == true
+            && string.Equals((string)eventArgument.AddressableLabel.RuntimeKey, "none", StringComparison.OrdinalIgnoreCase) == false)
         {
             Addressables.LoadResourceLocationsAsync(eventArgument.AddressableLabel.RuntimeKey).Completed += result =>
             {

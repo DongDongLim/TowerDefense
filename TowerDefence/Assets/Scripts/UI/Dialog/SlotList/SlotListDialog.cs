@@ -4,12 +4,12 @@ public sealed class SlotListDialog : Dialog
 {
     [SerializeField] private Transform _slotParent;
 
-    private EventArgument _startUIEventArgument;
+    private IEventArgument _startUIEventArgument;
 
     public override void Init(string addressKey)
     {
         base.Init(addressKey);
-        _startUIEventArgument = GetComponent<EventArgument>();
+        _startUIEventArgument = GetComponent<IEventArgument>();
     }
 
     protected override void EveActive()

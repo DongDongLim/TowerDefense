@@ -2,6 +2,6 @@ using System;
 
 public interface IGameObserver
 {
-    public IObservable<EventArgument> GetEventSubject();
-    public void SendEvent(EventArgument eventParameter);
+    public IObservable<IEventArgument> GetEventSubject();
+    public void SendEvent(IEventArgument eventParameter);
 }

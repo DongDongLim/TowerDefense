@@ -13,18 +13,16 @@ MonoBehaviour:
   m_Name: MainMenuSlot
   m_EditorClassIdentifier: 
   m_GroupName: MainMenuSlot
-  m_Data:
-    m_SerializedData: []
   m_GUID: 0f3881b2359d74c398ea9844768a3309
   m_SerializeEntries:
-  - m_GUID: 56dbe663fbe3a4168b45c7593eb2bc26
-    m_Address: GameStartSlot
+  - m_GUID: 3c67b0b81ea934418bf75dbb1a9fde03
+    m_Address: SoundPopupSlot
     m_ReadOnly: 0
     m_SerializedLabels:
     - MainMenuSlot
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3c67b0b81ea934418bf75dbb1a9fde03
-    m_Address: SoundPopupSlot
+  - m_GUID: 56dbe663fbe3a4168b45c7593eb2bc26
+    m_Address: GameStartSlot
     m_ReadOnly: 0
     m_SerializedLabels:
     - MainMenuSlot
